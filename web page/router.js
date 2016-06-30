@@ -1,4 +1,5 @@
 var profile = require("./profile.js");
+var renderer = require("./renderer.js");
 function user(request, response){
 
     var userName = request.url.replace("/", "");
@@ -8,7 +9,7 @@ function user(request, response){
 
         var studentProfile = new profile(userName);
 
-
+        renderer.view("header", {}, response);
         studentProfile.on("end", function(profileJSON){
             //show profile
 
@@ -20,20 +21,26 @@ function user(request, response){
 
             }
 
-            response.write(userName+" has "+value.badges+" badges");
-            response.end("footer");
+            renderer.view("profile", value, response);
+            renderer.view("footer", {}, response);
+            response.end();
         });
         studentProfile.on("error", function(error){
-            console.log(error);
+            response.write(error);
+            renderer.view("error", {errorMessage: error.message}, response);
+            renderer.view("Search",{}, response);
+            renderer.view("Footer", {}, response);
+            response.end("");
         });
     }
 }
 function home(request, response) {
     response.writeHead(200, {'Content-Type': 'text/plain'});
     if(request.url==="/"){
-        response.write("head");
-        response.write("Search");
-        response.end("Footer");
+        renderer.view("header",{} ,response);
+        renderer.view("Search",{}, response);
+        renderer.view("Footer", {}, response);
+        response.end();
     }
 }
 module.exports.home = home;
